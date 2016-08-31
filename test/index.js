@@ -67,6 +67,45 @@ describe('thunk middleware', () => {
         chai.assert.strictEqual(mutated, 1);
       });
     });
+
+    describe('handle FSA', () => {
+      it('must run the given payload function with dispatch and getState', done => {
+        const actionHandler = nextHandler();
+
+        actionHandler({payload: (dispatch, getState) => {
+          chai.assert.strictEqual(dispatch, doDispatch);
+          chai.assert.strictEqual(getState, doGetState);
+          done();
+        }});
+      });
+
+      it('must pass action to next if payload not a function', done => {
+        const actionObj = {payload: true};
+
+        const actionHandler = nextHandler(action => {
+          chai.assert.strictEqual(action, actionObj);
+          done();
+        });
+
+        actionHandler(actionObj);
+      });
+
+      it('must return value as expected if payload is a function', () => {
+        const expected = 'rocks';
+        const actionHandler = nextHandler();
+
+        const outcome = actionHandler({payload: () => expected});
+        chai.assert.strictEqual(outcome, expected);
+      });
+
+      it('must be invoked synchronously if payload function', () => {
+        const actionHandler = nextHandler();
+        let mutated = 0;
+
+        actionHandler({payload: () => mutated++});
+        chai.assert.strictEqual(mutated, 1);
+      });
+    });
   });
 
   describe('handle errors', () => {
